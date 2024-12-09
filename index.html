@@ -74,13 +74,21 @@
         .bottom-bar div:hover {
             background-color: #444;
         }
-        .repo-input {
-            width: 80%;
+        .repository-bar {
+            text-align: center;
+            margin: 20px;
+        }
+        .repository-bar input {
             padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            margin: 10px;
+            width: 70%;
+            margin-right: 10px;
+        }
+        .repository-bar button {
+            padding: 10px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -89,127 +97,41 @@
     <div class="search-bar">
         <input type="text" id="search" placeholder="Search for an app..." oninput="filterApps()">
     </div>
+    
+    <div class="repository-bar">
+        <input type="text" id="repo-url" placeholder="Enter JSON repository URL">
+        <button onclick="addRepository()">Add Repository</button>
+    </div>
+
     <div id="app-container"></div>
     <div id="news-container" style="display: none;"></div>
-
-    <!-- Repository Input Section -->
-    <div class="search-bar">
-        <input type="text" id="repo-url" class="repo-input" placeholder="Enter repository URL..." oninput="addRepository()">
-    </div>
 
     <div class="bottom-bar">
         <div onclick="showApps()">Apps</div>
         <div onclick="showNews()">News</div>
-        <div onclick="showRepositories()">Repositories</div>
     </div>
 
     <script>
         let apps = [];
         let news = [];
-        let repositories = [];
+        let repositories = JSON.parse(localStorage.getItem('repositories')) || [];
 
         // Fetch and display the apps and news from the JSON file
-        fetch('altstore.json')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                apps = data.apps;
-                news = data.news;
-                displayApps(apps);
-            })
-            .catch(error => {
-                console.error('There was a problem with the fetch operation:', error);
-            });
-
-        function displayApps(appsToDisplay) {
-            const appContainer = document.getElementById('app-container');
-            appContainer.innerHTML = '';
-            appContainer.style.display = 'block';
-            document.getElementById('news-container').style.display = 'none';
-
-            appsToDisplay.forEach(app => {
-                const appDiv = document.createElement('div');
-                appDiv.classList.add('app');
-
-                appDiv.innerHTML = `
-                    <img src="${app.iconURL}" alt="${app.name} Icon">
-                    <h2>${app.name}</h2>
-                    <p><strong>Subtitle:</strong> ${app.subtitle}</p>
-                    <p><strong>Version:</strong> ${app.version} (Updated: ${new Date(app.versionDate).toLocaleDateString()})</p>
-                    <p><strong>Description:</strong> ${app.localizedDescription}</p>
-                    <a href="${app.downloadURL}" target="_blank">Download</a>
-                    <div class="screenshots">
-                        <h3>Screenshots:</h3>
-                        ${app.screenshotURLs.map(url => `<img src="${url}" alt="Screenshot">`).join('')}
-                    </div>
-                `;
-
-                appContainer.appendChild(appDiv);
-            });
-        }
-
-        function displayNews() {
-            const newsContainer = document.getElementById('news-container');
-            newsContainer.innerHTML = '';
-            newsContainer.style.display = 'block';
-            document.getElementById('app-container').style.display = 'none';
-
-            news.forEach(item => {
-                const newsDiv = document.createElement('div');
-                newsDiv.classList.add('news');
-
-                newsDiv.innerHTML = `
-                    <img src="${item.imageURL}" alt="${item.title} Image">
-                    <h2>${item.title}</h2>
-                    <p><strong>Date:</strong> ${new Date(item.date).toLocaleDateString()}</p>
-                    <p><strong>Caption:</strong> ${item.caption}</p>
-                `;
-
-                newsContainer.appendChild(newsDiv);
-            });
-        }
-
-        function filterApps() {
-            const query = document.getElementById('search').value.toLowerCase();
-            const filteredApps = apps.filter(app => app.name.toLowerCase().includes(query) || app.subtitle.toLowerCase().includes(query));
-            displayApps(filteredApps);
-        }
-
-        function showApps() {
-            displayApps(apps);
-        }
-
-        function showNews() {
-            displayNews();
-        }
-
-        function addRepository() {
-            const repoURL = document.getElementById('repo-url').value.trim();
-            if (repoURL && !repositories.includes(repoURL)) {
-                repositories.push(repoURL);
-                alert(`Repository added: ${repoURL}`);
-                fetchRepositoryData(repoURL);
-            }
-        }
-
-        function fetchRepositoryData(url) {
-            fetch(url)
+        function loadData() {
+            // Load apps and news from the main altstore.json file
+            fetch('altstore.json')
                 .then(response => response.json())
                 .then(data => {
-                    apps = [...apps, ...data.apps];
-                    news = [...news, ...data.news];
+                    apps = data.apps;
+                    news = data.news;
                     displayApps(apps);
                 })
-                .catch(error => console.error('Error fetching repository data:', error));
-        }
+                .catch(error => console.error('Error loading main JSON:', error));
 
-        function showRepositories() {
-            alert(`Repositories:\n${repositories.join('\n')}`);
-        }
-    </script>
-</body>
-</html>
+            // Fetch and display apps from additional repositories
+            repositories.forEach(repoUrl => {
+                fetch(repoUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        apps = apps.concat(data.apps);
+            
