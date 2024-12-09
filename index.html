@@ -94,7 +94,7 @@
         let news = [];
 
         // Fetch and display the apps and news from the JSON file
-        fetch('https://cdn.altstore.io/file/altstore/apps.json')
+        fetch('altstore.json')
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
