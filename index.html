@@ -74,6 +74,14 @@
         .bottom-bar div:hover {
             background-color: #444;
         }
+        .repo-input {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin: 10px;
+        }
     </style>
 </head>
 <body>
@@ -84,14 +92,21 @@
     <div id="app-container"></div>
     <div id="news-container" style="display: none;"></div>
 
+    <!-- Repository Input Section -->
+    <div class="search-bar">
+        <input type="text" id="repo-url" class="repo-input" placeholder="Enter repository URL..." oninput="addRepository()">
+    </div>
+
     <div class="bottom-bar">
         <div onclick="showApps()">Apps</div>
         <div onclick="showNews()">News</div>
+        <div onclick="showRepositories()">Repositories</div>
     </div>
 
     <script>
         let apps = [];
         let news = [];
+        let repositories = [];
 
         // Fetch and display the apps and news from the JSON file
         fetch('altstore.json')
@@ -170,6 +185,30 @@
 
         function showNews() {
             displayNews();
+        }
+
+        function addRepository() {
+            const repoURL = document.getElementById('repo-url').value.trim();
+            if (repoURL && !repositories.includes(repoURL)) {
+                repositories.push(repoURL);
+                alert(`Repository added: ${repoURL}`);
+                fetchRepositoryData(repoURL);
+            }
+        }
+
+        function fetchRepositoryData(url) {
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    apps = [...apps, ...data.apps];
+                    news = [...news, ...data.news];
+                    displayApps(apps);
+                })
+                .catch(error => console.error('Error fetching repository data:', error));
+        }
+
+        function showRepositories() {
+            alert(`Repositories:\n${repositories.join('\n')}`);
         }
     </script>
 </body>
