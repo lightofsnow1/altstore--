@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>altstore-</title>
+    <style>
+        @font-face {
+            font-family: 'Cattie';
+            src: url('https://lightofsnow1.github.io/cgh/CattieRegular-EaBG8.ttf') format('truetype');
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            font-family: 'Cattie', sans-serif;
+            text-align: center;
+            margin: 20px 0;
+            color: #333;
+        }
+        .search-bar {
+            margin: 20px;
+            text-align: center;
+        }
+        .search-bar input {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .app, .news {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin: 20px;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .app img, .news img {
+            max-width: 100px;
+            border-radius: 8px;
+        }
+        .app h2, .news h2 {
+            margin: 0 0 10px;
+        }
+        .app p, .news p {
+            margin: 5px 0;
+        }
+        .screenshots img {
+            max-width: 200px;
+            margin: 5px;
+            border-radius: 8px;
+        }
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: #333;
+            color: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+        }
+        .bottom-bar div {
+            cursor: pointer;
+            text-align: center;
+            flex: 1;
+        }
+        .bottom-bar div:hover {
+            background-color: #444;
+        }
+    </style>
+</head>
+<body>
+    <h1>altstore -</h1>
+    <div class="search-bar">
+        <input type="text" id="search" placeholder="Search for an app..." oninput="filterApps()">
+    </div>
+    <div id="app-container"></div>
+    <div id="news-container" style="display: none;"></div>
+
+    <div class="bottom-bar">
+        <div onclick="showApps()">Apps</div>
+        <div onclick="showNews()">News</div>
+    </div>
+
+    <script>
+        let apps = [];
+        let news = [];
+
+        // Fetch and display the apps and news from the JSON file
+        fetch('connielibary.json')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                apps = data.apps;
+                news = data.news;
+                displayApps(apps);
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+
+        function displayApps(appsToDisplay) {
+            const appContainer = document.getElementById('app-container');
+            appContainer.innerHTML = '';
+            appContainer.style.display = 'block';
+            document.getElementById('news-container').style.display = 'none';
+
+            appsToDisplay.forEach(app => {
+                const appDiv = document.createElement('div');
+                appDiv.classList.add('app');
+
+                appDiv.innerHTML = `
+                    <img src="${app.iconURL}" alt="${app.name} Icon">
+                    <h2>${app.name}</h2>
+                    <p><strong>Subtitle:</strong> ${app.subtitle}</p>
+                    <p><strong>Version:</strong> ${app.version} (Updated: ${new Date(app.versionDate).toLocaleDateString()})</p>
+                    <p><strong>Description:</strong> ${app.localizedDescription}</p>
+                    <a href="${app.downloadURL}" target="_blank">Download</a>
+                    <div class="screenshots">
+                        <h3>Screenshots:</h3>
+                        ${app.screenshotURLs.map(url => `<img src="${url}" alt="Screenshot">`).join('')}
+                    </div>
+                `;
+
+                appContainer.appendChild(appDiv);
+            });
+        }
+
+        function displayNews() {
+            const newsContainer = document.getElementById('news-container');
+            newsContainer.innerHTML = '';
+            newsContainer.style.display = 'block';
+            document.getElementById('app-container').style.display = 'none';
+
+            news.forEach(item => {
+                const newsDiv = document.createElement('div');
+                newsDiv.classList.add('news');
+
+                newsDiv.innerHTML = `
+                    <img src="${item.imageURL}" alt="${item.title} Image">
+                    <h2>${item.title}</h2>
+                    <p><strong>Date:</strong> ${new Date(item.date).toLocaleDateString()}</p>
+                    <p><strong>Caption:</strong> ${item.caption}</p>
+                `;
+
+                newsContainer.appendChild(newsDiv);
+            });
+        }
+
+        function filterApps() {
+            const query = document.getElementById('search').value.toLowerCase();
+            const filteredApps = apps.filter(app => app.name.toLowerCase().includes(query) || app.subtitle.toLowerCase().includes(query));
+            displayApps(filteredApps);
+        }
+
+        function showApps() {
+            displayApps(apps);
+        }
+
+        function showNews() {
+            displayNews();
+        }
+    </script>
+</body>
+</html>
