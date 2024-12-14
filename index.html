@@ -3,140 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connie's Library</title>
+    <title>App Store</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
+            background-color: #f7f7f7;
+            padding: 20px;
         }
-        header {
-            background-color: #333;
-            color: white;
-            padding: 1rem;
-            text-align: center;
-            position: relative;
-        }
-        #import-btn {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            padding: 0.5rem;
+        #import-button {
             background-color: #4CAF50;
             color: white;
+            padding: 10px 20px;
             border: none;
-            border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
         }
-        #import-btn:hover {
+        #import-button:hover {
             background-color: #45a049;
         }
-        .app-container {
+        #url-input {
+            padding: 10px;
+            width: 300px;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        #apps-container, #news-container {
             display: flex;
             flex-wrap: wrap;
-            justify-content: space-around;
-            padding: 1rem;
+            gap: 20px;
+            margin-top: 20px;
         }
-        .app-card {
+        .app-card, .news-item {
             background-color: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            margin: 1rem;
-            width: 280px;
+            padding: 15px;
             border-radius: 8px;
-            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 200px;
         }
-        .app-card img {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-        }
-        .app-card h3 {
-            margin: 0.5rem;
-            font-size: 1.2rem;
-        }
-        .app-card p {
-            margin: 0.5rem;
-            font-size: 0.9rem;
-        }
-        .app-card a {
-            display: block;
-            margin: 1rem;
-            padding: 0.5rem;
-            background-color: #4CAF50;
-            color: white;
-            text-align: center;
-            text-decoration: none;
+        .app-card img, .news-item img {
+            max-width: 100%;
             border-radius: 5px;
         }
-        .app-card a:hover {
-            background-color: #45a049;
-        }
-        .news-container {
-            background-color: #fff;
-            margin-top: 2rem;
-            padding: 1rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .news-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-        .news-item img {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            margin-right: 1rem;
-            border-radius: 50%;
-        }
         .news-item h4 {
-            margin: 0;
-            font-size: 1.1rem;
+            font-size: 18px;
+            margin-bottom: 10px;
         }
-        .news-item p {
-            margin: 0;
-            font-size: 0.9rem;
+        .app-card h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>Welcome to Connie's Library</h1>
-        <button id="import-btn">Import URL</button>
-    </header>
+    <h1>App Store</h1>
 
-    <div class="app-container" id="apps-container">
-        <!-- Apps will be dynamically loaded here -->
+    <div>
+        <input type="text" id="url-input" placeholder="Enter URL">
+        <button id="import-button">Import</button>
     </div>
 
-    <div class="news-container" id="news-container">
-        <!-- News will be dynamically loaded here -->
-    </div>
+    <div id="apps-container"></div>
+    <div id="news-container"></div>
 
     <script>
-        document.getElementById('import-btn').addEventListener('click', () => {
-            const url = prompt('Please enter the URL of the JSON file:');
-            if (url) {
-                fetchData(url);
+        document.getElementById('import-button').addEventListener('click', async function() {
+            const url = document.getElementById('url-input').value;
+            
+            if (!url) {
+                alert("Please enter a URL.");
+                return;
             }
-        });
 
-        async function fetchData(url) {
             try {
-                const response = await fetch(url);
+                const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+                const response = await fetch(proxyUrl + url);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+
                 const data = await response.json();
+
+                if (!data || !data.apps || !data.news) {
+                    throw new Error('Invalid JSON structure');
+                }
+
                 const appsContainer = document.getElementById('apps-container');
                 const newsContainer = document.getElementById('news-container');
                 appsContainer.innerHTML = '';
                 newsContainer.innerHTML = '';
 
-                // Display apps
+                // Display Apps
                 data.apps.forEach(app => {
                     const appCard = document.createElement('div');
                     appCard.classList.add('app-card');
-
                     appCard.innerHTML = `
                         <img src="${app.iconURL}" alt="${app.name}">
                         <h3>${app.name}</h3>
@@ -147,11 +109,10 @@
                     appsContainer.appendChild(appCard);
                 });
 
-                // Display news
+                // Display News
                 data.news.forEach(newsItem => {
                     const newsItemDiv = document.createElement('div');
                     newsItemDiv.classList.add('news-item');
-
                     newsItemDiv.innerHTML = `
                         <img src="${newsItem.imageURL}" alt="${newsItem.title}">
                         <div>
@@ -161,11 +122,12 @@
                     `;
                     newsContainer.appendChild(newsItemDiv);
                 });
+
             } catch (error) {
                 console.error('Error fetching the data:', error);
                 alert('Failed to fetch data. Please check the URL and try again.');
             }
-        }
+        });
     </script>
 
 </body>
