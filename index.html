@@ -161,13 +161,13 @@
         }
 
         function importURL() {
-            const url = prompt('Please enter the URL of the JSON data:');
+            const url = prompt('Please enter the URL of the JSON data:', 'https://lightofsnow1.github.io/altstore--/nonaltstore.json');
             if (url) {
                 fetchApps(url);
             }
         }
 
-        // Fetch data from default URL when the page loads
+        // Fetch data from the default URL when the page loads
         window.onload = () => fetchApps('https://lightofsnow1.github.io/altstore--/nonaltstore.json');
     </script>
 
