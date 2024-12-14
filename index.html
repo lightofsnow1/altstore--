@@ -3,135 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>altstore-</title>
+    <title>Connie's Library</title>
     <style>
-        @font-face {
-            font-family: 'Cattie';
-            src: url('https://lightofsnow1.github.io/cgh/CattieRegular-EaBG8.ttf') format('truetype');
-        }
-
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
+            background-color: #f4f4f4;
             margin: 0;
             padding: 0;
         }
-        h1 {
-            font-family: 'Cattie', sans-serif;
-            text-align: center;
-            margin: 20px 0;
-            color: #333;
-        }
-        .search-bar {
-            margin: 20px;
-            text-align: center;
-        }
-        .search-bar input {
-            width: 80%;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-        }
-        .app, .news {
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            margin: 20px;
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .app img, .news img {
-            max-width: 100px;
-            border-radius: 8px;
-        }
-        .app h2, .news h2 {
-            margin: 0 0 10px;
-        }
-        .app p, .news p {
-            margin: 5px 0;
-        }
-        .screenshots img {
-            max-width: 200px;
-            margin: 5px;
-            border-radius: 8px;
-        }
-        .bottom-bar {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
+        header {
             background-color: #333;
             color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        .app-container {
             display: flex;
+            flex-wrap: wrap;
             justify-content: space-around;
-            padding: 10px 0;
+            padding: 1rem;
         }
-        .bottom-bar div {
-            cursor: pointer;
-            text-align: center;
-            flex: 1;
+        .app-card {
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin: 1rem;
+            width: 280px;
+            border-radius: 8px;
+            overflow: hidden;
         }
-        .bottom-bar div:hover {
-            background-color: #444;
+        .app-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
         }
-        .repository-bar {
-            text-align: center;
-            margin: 20px;
+        .app-card h3 {
+            margin: 0.5rem;
+            font-size: 1.2rem;
         }
-        .repository-bar input {
-            padding: 10px;
-            width: 70%;
-            margin-right: 10px;
+        .app-card p {
+            margin: 0.5rem;
+            font-size: 0.9rem;
         }
-        .repository-bar button {
-            padding: 10px;
-            background-color: #333;
+        .app-card a {
+            display: block;
+            margin: 1rem;
+            padding: 0.5rem;
+            background-color: #4CAF50;
             color: white;
-            border: none;
+            text-align: center;
+            text-decoration: none;
             border-radius: 5px;
+        }
+        .app-card a:hover {
+            background-color: #45a049;
+        }
+        .news-container {
+            background-color: #fff;
+            margin-top: 2rem;
+            padding: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .news-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .news-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            margin-right: 1rem;
+            border-radius: 50%;
+        }
+        .news-item h4 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+        .news-item p {
+            margin: 0;
+            font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
-    <h1>altstore -</h1>
-    <div class="search-bar">
-        <input type="text" id="search" placeholder="Search for an app..." oninput="filterApps()">
-    </div>
-    
-    <div class="repository-bar">
-        <input type="text" id="repo-url" placeholder="Enter JSON repository URL">
-        <button onclick="addRepository()">Add Repository</button>
+
+    <header>
+        <h1>Welcome to Connie's Library</h1>
+    </header>
+
+    <div class="app-container" id="apps-container">
+        <!-- Apps will be dynamically loaded here -->
     </div>
 
-    <div id="app-container"></div>
-    <div id="news-container" style="display: none;"></div>
-
-    <div class="bottom-bar">
-        <div onclick="showApps()">Apps</div>
-        <div onclick="showNews()">News</div>
+    <div class="news-container" id="news-container">
+        <!-- News will be dynamically loaded here -->
     </div>
 
     <script>
-        let apps = [];
-        let news = [];
-        let repositories = JSON.parse(localStorage.getItem('repositories')) || [];
+        async function fetchApps() {
+            try {
+                const response = await fetch('https://lightofsnow1.github.io/altstore--/nonaltstore.json');
+                const data = await response.json();
+                const appsContainer = document.getElementById('apps-container');
+                const newsContainer = document.getElementById('news-container');
 
-        // Fetch and display the apps and news from the JSON file
-        function loadData() {
-            // Load apps and news from the main altstore.json file
-            fetch('altstore.json')
-                .then(response => response.json())
-                .then(data => {
-                    apps = data.apps;
-                    news = data.news;
-                    displayApps(apps);
-                })
-                .catch(error => console.error('Error loading main JSON:', error));
+                // Display apps
+                data.apps.forEach(app => {
+                    const appCard = document.createElement('div');
+                    appCard.classList.add('app-card');
 
-            // Fetch and display apps from additional repositories
-            repositories.forEach(repoUrl => {
-                fetch(repoUrl)
-                    .then(response => response.json())
-                    .then(data => {
-                        apps = apps.concat(data.apps);
-            
+                    appCard.innerHTML = `
+                        <img src="${app.iconURL}" alt="${app.name}">
+                        <h3>${app.name}</h3>
+                        <p><strong>Version:</strong> ${app.version}</p>
+                        <p><strong>Subtitle:</strong> ${app.subtitle}</p>
+                        <a href="${app.downloadURL}" target="_blank">Download</a>
+                    `;
+                    appsContainer.appendChild(appCard);
+                });
+
+                // Display news
+                data.news.forEach(newsItem => {
+                    const newsItemDiv = document.createElement('div');
+                    newsItemDiv.classList.add('news-item');
+
+                    newsItemDiv.innerHTML = `
+                        <img src="${newsItem.imageURL}" alt="${newsItem.title}">
+                        <div>
+                            <h4>${newsItem.title}</h4>
+                            <p>${newsItem.caption}</p>
+                        </div>
+                    `;
+                    newsContainer.appendChild(newsItemDiv);
+                });
+            } catch (error) {
+                console.error('Error fetching the data:', error);
+            }
+        }
+
+        // Fetch data when the page loads
+        window.onload = fetchApps;
+    </script>
+
+</body>
+</html>
